@@ -1,4 +1,4 @@
-import { Input, Table, Tag } from 'antd';
+import { Empty, Input, Table, Tag } from 'antd';
 import { useMemo, useState } from 'react';
 import type { ApiEndpoint } from '../types/analysis';
 
@@ -7,11 +7,11 @@ interface EndpointTableProps {
 }
 
 const methodColors: Record<string, string> = {
-  GET: 'green',
-  POST: 'blue',
-  PUT: 'gold',
+  GET: 'success',
+  POST: 'processing',
+  PUT: 'warning',
   PATCH: 'purple',
-  DELETE: 'red',
+  DELETE: 'error',
 };
 
 export function EndpointTable({ endpoints }: EndpointTableProps) {
@@ -26,6 +26,10 @@ export function EndpointTable({ endpoints }: EndpointTableProps) {
     );
   }, [endpoints, query]);
 
+  if (endpoints.length === 0) {
+    return <Empty description="No API endpoints were detected." />;
+  }
+
   return (
     <div className="space-y-4">
       <Input.Search allowClear placeholder="Search endpoints" onChange={(event) => setQuery(event.target.value)} />
@@ -37,10 +41,11 @@ export function EndpointTable({ endpoints }: EndpointTableProps) {
           {
             title: 'Method',
             dataIndex: 'method',
-            render: (method: string) => <Tag color={methodColors[method] ?? 'default'}>{method}</Tag>,
+            render: (method: string) => <Tag color={methodColors[method] ?? 'default'} className="font-mono font-semibold">{method}</Tag>,
           },
           { title: 'Path', dataIndex: 'path' },
           { title: 'Handler', dataIndex: 'handler' },
+          { title: 'Type', dataIndex: 'router', render: (router: string) => router || 'Framework route' },
           { title: 'File', dataIndex: 'filePath' },
         ]}
       />

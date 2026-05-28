@@ -1,7 +1,7 @@
 import { InboxOutlined } from '@ant-design/icons';
-import { Alert, Button, Upload, type UploadProps } from 'antd';
+import { Button, Upload, type UploadProps } from 'antd';
 import type { ProjectAnalysis } from '../types/analysis';
-import { uploadProjectZip } from '../api/projectApi';
+import { getApiErrorMessage, uploadProjectZip } from '../api/projectApi';
 
 interface UploadBoxProps {
   loading: boolean;
@@ -11,7 +11,7 @@ interface UploadBoxProps {
   onError: (message: string) => void;
 }
 
-export function UploadBox({ loading, error, onLoadingChange, onAnalysis, onError }: UploadBoxProps) {
+export function UploadBox({ loading, onLoadingChange, onAnalysis, onError }: UploadBoxProps) {
   const props: UploadProps = {
     name: 'file',
     multiple: false,
@@ -27,11 +27,7 @@ export function UploadBox({ loading, error, onLoadingChange, onAnalysis, onError
         const analysis = await uploadProjectZip(file);
         onAnalysis(analysis);
       } catch (err) {
-        const message =
-          typeof err === 'object' && err && 'message' in err
-            ? String((err as Error).message)
-            : 'Upload failed.';
-        onError(message);
+        onError(getApiErrorMessage(err));
       } finally {
         onLoadingChange(false);
       }
@@ -41,14 +37,13 @@ export function UploadBox({ loading, error, onLoadingChange, onAnalysis, onError
 
   return (
     <div className="space-y-4">
-      {error ? <Alert type="error" showIcon message={error} /> : null}
       <Upload.Dragger {...props} disabled={loading} className="bg-white">
         <p className="ant-upload-drag-icon">
-          <InboxOutlined />
+          <InboxOutlined className="text-sky-300" />
         </p>
-        <p className="ant-upload-text">Drop a backend project ZIP here</p>
-        <p className="ant-upload-hint">Supports Python FastAPI and Java Spring Boot projects for the MVP.</p>
-        <Button type="primary" loading={loading}>
+        <p className="ant-upload-text text-slate-100">Drop a backend project ZIP here</p>
+        <p className="ant-upload-hint">Supports Python FastAPI and Java Spring Boot projects.</p>
+        <Button type="primary" loading={loading} className="bg-sky-400 font-semibold text-slate-950">
           Select ZIP
         </Button>
       </Upload.Dragger>

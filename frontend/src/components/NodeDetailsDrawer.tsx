@@ -17,6 +17,11 @@ export function NodeDetailsDrawer({ node, open, onClose }: NodeDetailsDrawerProp
           </Descriptions.Item>
           <Descriptions.Item label="ID">{node.id}</Descriptions.Item>
           <Descriptions.Item label="File">{node.filePath}</Descriptions.Item>
+          {node.metadata && Object.keys(node.metadata).length ? (
+            <Descriptions.Item label="Metadata">
+              <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(node.metadata, null, 2)}</pre>
+            </Descriptions.Item>
+          ) : null}
         </Descriptions>
       ) : null}
     </Drawer>

@@ -12,6 +12,8 @@ from fastapi import HTTPException, UploadFile, status
 
 
 MAX_UPLOAD_SIZE = 25 * 1024 * 1024
+MAX_ZIP_ENTRIES = 2000
+MAX_UNCOMPRESSED_SIZE = 100 * 1024 * 1024
 
 
 async def validate_zip_upload(file: UploadFile) -> bytes:
@@ -25,7 +27,7 @@ async def validate_zip_upload(file: UploadFile) -> bytes:
     if len(data) > MAX_UPLOAD_SIZE:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="Upload exceeds the 25 MB limit.",
+            detail="Upload exceeds the 25 MB ZIP file limit.",
         )
     if not zipfile.is_zipfile(BytesIO(data)):
         raise HTTPException(
@@ -45,12 +47,27 @@ def extracted_zip(data: bytes) -> Iterator[Path]:
         extract_dir.mkdir()
 
         with zipfile.ZipFile(archive_path) as archive:
+            members = archive.infolist()
+            if len(members) > MAX_ZIP_ENTRIES:
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=f"ZIP contains too many entries. Maximum allowed is {MAX_ZIP_ENTRIES}.",
+                )
+
+            total_uncompressed_size = sum(member.file_size for member in members)
+            if total_uncompressed_size > MAX_UNCOMPRESSED_SIZE:
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail="ZIP uncompressed content exceeds the 100 MB limit.",
+                )
+
+            extract_root = extract_dir.resolve()
             for member in archive.infolist():
                 target = (extract_dir / member.filename).resolve()
-                if not str(target).startswith(str(extract_dir.resolve())):
+                if not target.is_relative_to(extract_root):
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Unsafe ZIP path detected.",
+                        detail=f"Unsafe ZIP path detected: {member.filename}",
                     )
             archive.extractall(extract_dir)
 

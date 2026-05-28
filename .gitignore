@@ -1,0 +1,40 @@
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.vite/
+.eslintcache
+tsconfig.tsbuildinfo
+
+# Environment and local files
+.env
+.env.*
+!.env.example
+.DS_Store
+*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Temporary uploads / extraction
+uploads/
+tmp/
+temp/
+*.tmp

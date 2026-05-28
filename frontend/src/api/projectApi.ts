@@ -15,6 +15,38 @@ export async function uploadProjectZip(file: File): Promise<ProjectAnalysis> {
   return response.data;
 }
 
+export async function analyzeGithubRepository(repoUrl: string): Promise<ProjectAnalysis> {
+  const response = await api.post<ProjectAnalysis>('/api/projects/analyze-github', { repoUrl });
+  return response.data;
+}
+
+export function getApiErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const detail = error.response?.data?.detail;
+    if (typeof detail === 'string') {
+      return detail;
+    }
+    if (Array.isArray(detail)) {
+      return detail
+        .map((item) => {
+          if (typeof item === 'string') {
+            return item;
+          }
+          if (item && typeof item === 'object' && 'msg' in item) {
+            return String(item.msg);
+          }
+          return JSON.stringify(item);
+        })
+        .join(', ');
+    }
+    if (error.response?.statusText) {
+      return `${error.response.status}: ${error.response.statusText}`;
+    }
+    return error.message;
+  }
+  return error instanceof Error ? error.message : 'Upload failed.';
+}
+
 export async function getHealth() {
   const response = await api.get('/api/health');
   return response.data;

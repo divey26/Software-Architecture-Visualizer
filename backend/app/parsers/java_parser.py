@@ -50,7 +50,7 @@ class JavaParser:
         )
         components.append(
             Component(
-                id=class_name,
+                id=self._component_id(relative_path, class_name),
                 label=class_name,
                 type=component_type,
                 filePath=relative_path,
@@ -63,12 +63,13 @@ class JavaParser:
     def _endpoints(self, relative_path: str, source: str) -> list[ApiEndpoint]:
         endpoints: list[ApiEndpoint] = []
         base_path = self._request_path(source)
+        method_source = source[source.find("{") + 1 :] if "{" in source else source
         method_pattern = re.compile(
             r"@(GetMapping|PostMapping|PutMapping|DeleteMapping|PatchMapping|RequestMapping)"
             r"(?:\(([^)]*)\))?[\s\S]{0,500}?\b(?:public|private|protected)?\s+[\w<>, ?]+\s+(\w+)\s*\(",
             re.MULTILINE,
         )
-        for match in method_pattern.finditer(source):
+        for match in method_pattern.finditer(method_source):
             annotation, args, handler = match.groups()
             method = self._method_for(annotation, args or "")
             path = self._path_from_args(args or "")
@@ -114,7 +115,7 @@ class JavaParser:
         return self._path_from_args(request_mapping.group(1)) if request_mapping else ""
 
     def _path_from_args(self, args: str) -> str:
-        match = re.search(r"(?:value\s*=\s*|path\s*=\s*)?[\"']([^\"']+)[\"']", args)
+        match = re.search(r"(?:value\s*=\s*|path\s*=\s*)?\{?\s*[\"']([^\"']+)[\"']", args)
         return match.group(1) if match else "/"
 
     def _method_for(self, annotation: str, args: str) -> str:
@@ -129,3 +130,7 @@ class JavaParser:
         if path in {"", "/"}:
             return base
         return f"/{base.strip('/')}/{path.strip('/')}"
+
+    def _component_id(self, relative_path: str, label: str) -> str:
+        token = re.sub(r"[^A-Za-z0-9]+", "-", relative_path).strip("-").lower()
+        return f"{token}:{label}"

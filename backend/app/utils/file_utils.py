@@ -13,9 +13,12 @@ IGNORED_DIRS = {
     "target",
     "build",
     "dist",
+    "coverage",
+    ".next",
+    "out",
 }
 
-SUPPORTED_EXTENSIONS = {".py", ".java", ".json", ".yml", ".yaml", ".properties"}
+SUPPORTED_EXTENSIONS = {".py", ".java", ".js", ".jsx", ".ts", ".tsx", ".json", ".yml", ".yaml", ".properties", ".example"}
 
 
 def should_ignore(path: Path) -> bool:
@@ -28,8 +31,14 @@ def language_for(path: Path) -> str:
         return "python"
     if extension == ".java":
         return "java"
+    if extension in {".js", ".jsx"}:
+        return "javascript"
+    if extension in {".ts", ".tsx"}:
+        return "typescript"
     if extension in {".yml", ".yaml"}:
         return "yaml"
+    if path.name == ".env.example":
+        return "env"
     if extension == ".json":
         return "json"
     if extension == ".properties":

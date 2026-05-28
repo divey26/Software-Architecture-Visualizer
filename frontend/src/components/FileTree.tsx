@@ -1,4 +1,4 @@
-import { Table, Tag } from 'antd';
+import { Empty, Table, Tag } from 'antd';
 import type { ProjectFile } from '../types/analysis';
 
 interface FileTreeProps {
@@ -6,6 +6,10 @@ interface FileTreeProps {
 }
 
 export function FileTree({ files }: FileTreeProps) {
+  if (files.length === 0) {
+    return <Empty description="No supported project files were detected." />;
+  }
+
   return (
     <Table
       rowKey="path"

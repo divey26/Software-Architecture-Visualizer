@@ -1,6 +1,7 @@
 import { Alert, Card } from 'antd';
 import { EndpointTable } from '../components/EndpointTable';
 import type { ProjectAnalysis } from '../types/analysis';
+import { AnimatedPage } from '../components/AnimatedPage';
 
 interface EndpointsProps {
   analysis?: ProjectAnalysis;
@@ -12,10 +13,10 @@ export function Endpoints({ analysis }: EndpointsProps) {
   }
 
   return (
-    <div className="py-8">
-      <Card title="API Endpoints">
+    <AnimatedPage className="py-6">
+      <Card title={<span className="text-slate-50">API Endpoints</span>} className="dark-ant-card">
         <EndpointTable endpoints={analysis.endpoints} />
       </Card>
-    </div>
+    </AnimatedPage>
   );
 }
