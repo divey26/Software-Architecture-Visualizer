@@ -36,16 +36,25 @@ export function UploadBox({ loading, onLoadingChange, onAnalysis, onError }: Upl
   };
 
   return (
-    <div className="space-y-4">
-      <Upload.Dragger {...props} disabled={loading} className="bg-white">
-        <p className="ant-upload-drag-icon">
-          <InboxOutlined className="text-sky-300" />
-        </p>
-        <p className="ant-upload-text text-slate-100">Drop a backend project ZIP here</p>
-        <p className="ant-upload-hint">Supports Python FastAPI and Java Spring Boot projects.</p>
-        <Button type="primary" loading={loading} className="bg-sky-400 font-semibold text-slate-950">
-          Select ZIP
-        </Button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <Upload.Dragger {...props} disabled={loading}>
+        <div style={{ padding: '24px 16px' }}>
+          <p className="ant-upload-drag-icon" style={{ marginBottom: 14 }}>
+            <InboxOutlined />
+          </p>
+          <p className="ant-upload-text">Drop your backend project ZIP here</p>
+          <p className="ant-upload-hint" style={{ marginBottom: 18 }}>
+            Drag and drop a .zip file, or click to browse from your machine.
+          </p>
+          <Button
+            type="primary"
+            loading={loading}
+            className="btn-primary"
+            style={{ height: 38, paddingInline: 22, fontWeight: 600, fontSize: 13 }}
+          >
+            {loading ? 'Analyzing…' : 'Select ZIP File'}
+          </Button>
+        </div>
       </Upload.Dragger>
     </div>
   );

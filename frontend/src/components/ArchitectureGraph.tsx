@@ -181,18 +181,25 @@ export function ArchitectureGraph({ analysis }: ArchitectureGraphProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-lg border border-slate-700 bg-slate-950/80 p-3 shadow-lg shadow-slate-950/30 backdrop-blur-xl md:flex-row md:items-center">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Toolbar */}
+      <div style={{
+        display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center',
+        background: 'var(--color-surface-2)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 10,
+        padding: '10px 14px',
+      }}>
         <Input.Search
           allowClear
-          placeholder="Search components by name, type, or file"
+          placeholder="Search components by name, type, or file…"
           onChange={(event) => setQuery(event.target.value)}
-          className="md:max-w-md"
+          style={{ maxWidth: 340 }}
         />
         <Select
           value={typeFilter}
           onChange={setTypeFilter}
-          className="min-w-48"
+          style={{ minWidth: 180 }}
           options={[
             { label: 'All components', value: 'all' },
             { label: 'Servers', value: 'server' },
@@ -209,50 +216,80 @@ export function ArchitectureGraph({ analysis }: ArchitectureGraphProps) {
             { label: 'Config', value: 'config' },
           ]}
         />
-        <Tag color="cyan" className="ml-auto w-fit">
+        <div style={{
+          marginLeft: 'auto',
+          padding: '3px 10px',
+          background: 'rgba(99,102,241,0.12)',
+          border: '1px solid rgba(99,102,241,0.3)',
+          borderRadius: 100,
+          fontSize: 12,
+          fontWeight: 700,
+          color: '#818cf8',
+          fontFamily: 'var(--font-mono)',
+        }}>
           {nodes.length} visible
-        </Tag>
+        </div>
         <Button
           icon={isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
           onClick={toggleFullscreen}
-          className="border-slate-600 bg-slate-900 text-slate-100"
+          className="btn-ghost"
+          style={{ fontSize: 13 }}
         >
           {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
         </Button>
       </div>
-      {nodes.length === 0 ? <Empty description="No components match your search." /> : null}
+
+      {nodes.length === 0 ? (
+        <Empty description={<span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>No components match your search.</span>} />
+      ) : null}
+
       <div
         ref={graphShellRef}
-        className={`graph-fade-in overflow-hidden border border-slate-700 bg-slate-950 ${
-          isFullscreen
-            ? 'fixed inset-0 z-50 h-screen w-screen rounded-none p-4'
-            : 'h-[calc(100vh-260px)] min-h-[620px] rounded-lg'
-        }`}
+        className="graph-fade-in"
+        style={{
+          overflow: 'hidden',
+          border: '1px solid var(--color-border)',
+          background: '#07090f',
+          ...(isFullscreen
+            ? { position: 'fixed', inset: 0, zIndex: 50, height: '100vh', width: '100vw', borderRadius: 0, padding: 16 }
+            : { height: 'calc(100vh - 260px)', minHeight: 620, borderRadius: 12 }),
+        }}
       >
         {isFullscreen ? (
-          <div className="mb-3 flex items-center justify-between rounded-lg border border-slate-700 bg-slate-950/90 p-3">
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 12,
+            padding: '12px 16px',
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 10,
+          }}>
             <div>
-              <p className="m-0 text-sm uppercase tracking-wide text-sky-300">Fullscreen Architecture View</p>
-              <h2 className="m-0 text-lg font-semibold text-slate-50">{analysis.projectName}</h2>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#818cf8', fontFamily: 'var(--font-mono)', marginBottom: 3 }}>
+                Fullscreen Architecture View
+              </div>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 17, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                {analysis.projectName}
+              </div>
             </div>
-            <Button icon={<FullscreenExitOutlined />} onClick={toggleFullscreen}>
+            <Button icon={<FullscreenExitOutlined />} onClick={toggleFullscreen} className="btn-ghost">
               Exit Fullscreen
             </Button>
           </div>
         ) : null}
-        <div className={isFullscreen ? 'h-[calc(100vh-96px)] overflow-hidden rounded-lg border border-slate-800' : 'h-full'}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          fitView
-          onNodeClick={(_, node) => {
-            setSelectedNode(analysis.nodes.find((item) => item.id === node.id));
-          }}
-        >
-          <MiniMap nodeColor={(node) => String(node.style?.background ?? '#64748b')} />
-          <Controls />
-          <Background color="#334155" gap={18} />
-        </ReactFlow>
+        <div style={isFullscreen ? { height: 'calc(100vh - 96px)', overflow: 'hidden', borderRadius: 10, border: '1px solid var(--color-border)' } : { height: '100%' }}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            fitView
+            onNodeClick={(_, node) => {
+              setSelectedNode(analysis.nodes.find((item) => item.id === node.id));
+            }}
+          >
+            <MiniMap nodeColor={(node) => String(node.style?.background ?? '#64748b')} />
+            <Controls />
+            <Background color="#1c2430" gap={20} />
+          </ReactFlow>
         </div>
       </div>
       <NodeDetailsDrawer open={Boolean(selected)} node={selected} onClose={() => setSelectedNode(undefined)} />

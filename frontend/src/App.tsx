@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Layout, Menu, Button, Drawer, Segmented } from 'antd';
+import { Layout, Menu, Button, Drawer, Segmented, Tooltip } from 'antd';
 import { Link, Navigate, Route, BrowserRouter as Router, Routes, useLocation, useNavigate } from 'react-router-dom';
 import {
   ApartmentOutlined,
@@ -13,6 +13,9 @@ import {
   UploadOutlined,
   WarningOutlined,
   MenuOutlined,
+  MoonOutlined,
+  SunOutlined,
+  CodeOutlined,
 } from '@ant-design/icons';
 import { Home } from './pages/Home';
 import { UploadPage } from './pages/Upload';
@@ -31,6 +34,35 @@ import { loadHistory, saveAnalysisToHistory } from './utils/history';
 
 const { Sider, Content } = Layout;
 type ThemeMode = 'light' | 'dark';
+
+const navGroups = [
+  {
+    label: 'Overview',
+    items: [
+      { key: '/', icon: <HomeOutlined />, label: 'Home' },
+      { key: '/upload', icon: <UploadOutlined />, label: 'Upload' },
+      { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
+    ],
+  },
+  {
+    label: 'Analysis',
+    items: [
+      { key: '/architecture', icon: <ApartmentOutlined />, label: 'Architecture' },
+      { key: '/endpoints', icon: <ApiOutlined />, label: 'Endpoints' },
+      { key: '/access-control', icon: <LockOutlined />, label: 'Access Control' },
+      { key: '/files', icon: <FileTextOutlined />, label: 'Files' },
+      { key: '/dependencies', icon: <DatabaseOutlined />, label: 'Dependencies' },
+    ],
+  },
+  {
+    label: 'Reports',
+    items: [
+      { key: '/quality', icon: <WarningOutlined />, label: 'Quality' },
+      { key: '/report', icon: <CodeOutlined />, label: 'Report' },
+      { key: '/history', icon: <HistoryOutlined />, label: 'History' },
+    ],
+  },
+];
 
 function Shell() {
   const location = useLocation();
@@ -65,84 +97,133 @@ function Shell() {
   };
 
   const navItems = useMemo(
-    () => [
-      { key: '/', icon: <HomeOutlined />, label: <Link to="/">Home</Link> },
-      { key: '/upload', icon: <UploadOutlined />, label: <Link to="/upload">Upload</Link> },
-      { key: '/dashboard', icon: <DashboardOutlined />, label: <Link to="/dashboard">Dashboard</Link> },
-      { key: '/architecture', icon: <ApartmentOutlined />, label: <Link to="/architecture">Architecture</Link> },
-      { key: '/endpoints', icon: <ApiOutlined />, label: <Link to="/endpoints">Endpoints</Link> },
-      { key: '/access-control', icon: <LockOutlined />, label: <Link to="/access-control">Access Control</Link> },
-      { key: '/files', icon: <FileTextOutlined />, label: <Link to="/files">Files</Link> },
-      { key: '/dependencies', icon: <DatabaseOutlined />, label: <Link to="/dependencies">Dependencies</Link> },
-      { key: '/quality', icon: <WarningOutlined />, label: <Link to="/quality">Quality</Link> },
-      { key: '/report', icon: <FileTextOutlined />, label: <Link to="/report">Report</Link> },
-      { key: '/history', icon: <HistoryOutlined />, label: <Link to="/history">History</Link> },
-    ],
+    () =>
+      navGroups.flatMap((group) =>
+        group.items.map((item) => ({
+          key: item.key,
+          icon: item.icon,
+          label: <Link to={item.key}>{item.label}</Link>,
+        })),
+      ),
     [],
   );
 
   const sidebar = (
-    <div className="flex h-full flex-col border-r border-slate-700/70 bg-slate-950/70 p-4 backdrop-blur-xl">
-      <Link to="/" className="mb-8 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-400/15 text-sky-300 shadow-[0_0_32px_rgba(56,189,248,0.24)]">
-          <ApartmentOutlined />
+    <div className="sidebar-root">
+      {/* Logo */}
+      <Link to="/" className="sidebar-logo">
+        <div className="sidebar-logo-icon">
+          <ApartmentOutlined style={{ color: '#fff', fontSize: 16 }} />
         </div>
-        <div>
-          <p className="m-0 text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">SAV</p>
-          <h1 className="m-0 text-base font-semibold text-slate-50">Architecture Visualizer</h1>
+        <div className="sidebar-logo-text">
+          <div className="brand">ArchViz</div>
+          <div className="title">Architecture Visualizer</div>
         </div>
       </Link>
-      <Menu
-        mode="inline"
-        theme="dark"
-        selectedKeys={[location.pathname]}
-        items={navItems}
-        className="border-0"
-        onClick={() => setMobileNavOpen(false)}
-      />
-      <div className="mt-auto rounded-lg border border-slate-700 bg-slate-900/70 p-3">
-        <div className="mb-4">
-          <p className="mb-2 text-xs uppercase tracking-wide text-slate-500">Theme</p>
+
+      {/* Navigation grouped */}
+      <nav style={{ flex: 1 }}>
+        {navGroups.map((group) => (
+          <div key={group.label} style={{ marginBottom: 8 }}>
+            <div className="sidebar-section-label">{group.label}</div>
+            <Menu
+              mode="inline"
+              selectedKeys={[location.pathname]}
+              items={group.items.map((item) => ({
+                key: item.key,
+                icon: item.icon,
+                label: <Link to={item.key} onClick={() => setMobileNavOpen(false)}>{item.label}</Link>,
+              }))}
+              className="sidebar-menu"
+            />
+          </div>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="sidebar-footer">
+        {/* Theme toggle */}
+        <div style={{ marginBottom: 14 }}>
           <Segmented
             block
             size="small"
             value={themeMode}
             onChange={(value) => setThemeMode(value as ThemeMode)}
             options={[
-              { label: 'Light', value: 'light' },
-              { label: 'Dark', value: 'dark' },
+              { label: <span><SunOutlined /> Light</span>, value: 'light' },
+              { label: <span><MoonOutlined /> Dark</span>, value: 'dark' },
             ]}
           />
         </div>
-        <p className="text-xs uppercase tracking-wide text-slate-500">Current Project</p>
-        <p className="truncate text-sm font-semibold text-slate-100">{analysis?.projectName ?? 'No analysis loaded'}</p>
-        <Button block className="mt-3 border-sky-400/50 bg-sky-400/10 text-sky-200" onClick={() => handleAnalysis(sampleAnalysis)}>
-          Load Sample
-        </Button>
+
+        {/* Current project */}
+        <div className="sidebar-project-card">
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+            Active Project
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {analysis?.projectName ?? 'No project loaded'}
+          </div>
+          <Button
+            block
+            size="small"
+            className="btn-ghost"
+            onClick={() => handleAnalysis(sampleAnalysis)}
+            style={{ fontSize: 12, fontWeight: 600 }}
+          >
+            Load Sample Project
+          </Button>
+        </div>
       </div>
     </div>
   );
 
   return (
-    <Layout className="min-h-screen bg-transparent">
-      <Sider width={284} className="sticky top-0 hidden h-screen overflow-auto bg-transparent lg:block">
+    <Layout className="min-h-screen" style={{ background: 'transparent' }}>
+      <Sider
+        width={256}
+        style={{ background: 'transparent', position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}
+        className="hidden lg:block"
+      >
         {sidebar}
       </Sider>
+
       <Drawer
         open={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
         placement="left"
-        width={300}
-        bodyStyle={{ padding: 0, background: '#0f172a' }}
+        width={260}
+        bodyStyle={{ padding: 0, background: 'var(--color-surface)' }}
         headerStyle={{ display: 'none' }}
       >
         {sidebar}
       </Drawer>
-      <Content className="theme-surface min-w-0 px-4 pb-8 pt-4 lg:px-8">
-        <div className="mb-4 flex items-center justify-between lg:hidden">
-          <Button icon={<MenuOutlined />} onClick={() => setMobileNavOpen(true)} />
-          <span className="font-semibold text-slate-100">Architecture Visualizer</span>
+
+      <Content className="theme-surface min-w-0 px-4 pb-10 pt-5 lg:px-8">
+        {/* Mobile top bar */}
+        <div className="mb-5 flex items-center justify-between lg:hidden">
+          <Button
+            icon={<MenuOutlined />}
+            onClick={() => setMobileNavOpen(true)}
+            className="btn-ghost"
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className="sidebar-logo-icon" style={{ width: 28, height: 28 }}>
+              <ApartmentOutlined style={{ color: '#fff', fontSize: 13 }} />
+            </div>
+            <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15, color: 'var(--color-text-primary)' }}>
+              ArchViz
+            </span>
+          </div>
+          <Tooltip title={themeMode === 'dark' ? 'Light mode' : 'Dark mode'}>
+            <Button
+              className="btn-ghost"
+              icon={themeMode === 'dark' ? <SunOutlined /> : <MoonOutlined />}
+              onClick={() => setThemeMode(themeMode === 'dark' ? 'light' : 'dark')}
+            />
+          </Tooltip>
         </div>
+
         <div className="mx-auto max-w-7xl">
           <Routes>
             <Route path="/" element={<Home />} />
