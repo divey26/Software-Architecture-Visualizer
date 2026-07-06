@@ -21,8 +21,6 @@ build/
 tsconfig.tsbuildinfo
 
 # Environment and local files
-.env
-.env.*
 !.env.example
 .DS_Store
 *.local
@@ -38,3 +36,4 @@ uploads/
 tmp/
 temp/
 *.tmp
+config.bat
